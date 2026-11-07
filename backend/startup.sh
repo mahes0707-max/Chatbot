@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 
 # Wait for Qdrant to be ready
 echo "Waiting for Qdrant to be ready..."

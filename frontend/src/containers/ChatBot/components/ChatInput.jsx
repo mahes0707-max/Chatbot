@@ -29,7 +29,7 @@ const ChatInput = ({
                     onKeyDown={handleKeyDown}
                     placeholder={
                         limitReached
-                            ? "Monthly limit reached. Contact support at linkbuilders.support@gmail.com"
+                            ? "Monthly limit reached. Contact support at nexora.support@gmail.com"
                             : "Type a message..."
                     }
                     disabled={limitReached}

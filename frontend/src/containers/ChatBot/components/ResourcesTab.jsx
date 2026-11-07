@@ -1,181 +1,154 @@
+
 import React from "react";
-import {
-    FileTextOutlined,
-    LinkOutlined,
-    VideoCameraOutlined,
-} from "@ant-design/icons";
-import {
-    ResourcesContainer,
-    ResourcesGrid,
-    ResourceCard,
-    SuggestedResources,
-} from "../ChatBotWidget.styles";
-import { learningResources, helpResources } from "../chatBotData";
+import { ResourcesContainer } from "../ChatBotWidget.styles";
+
+const resourceCategories = [
+    {
+        title: "Programming & DSA",
+        description:
+            "Learn C, C++, Java, Python, problem-solving and coding practice.",
+        links: [
+            { name: "LeetCode", url: "https://leetcode.com/" },
+            { name: "HackerRank", url: "https://www.hackerrank.com/" },
+            { name: "GeeksforGeeks", url: "https://www.geeksforgeeks.org/" },
+        ],
+    },
+    {
+        title: "AI, ML & Data Science",
+        description:
+            "Explore machine learning, deep learning, datasets and AI tools.",
+        links: [
+            { name: "Kaggle", url: "https://www.kaggle.com/" },
+            {
+                name: "Google ML Crash Course",
+                url: "https://developers.google.com/machine-learning/crash-course",
+            },
+            { name: "Hugging Face", url: "https://huggingface.co/" },
+        ],
+    },
+    {
+        title: "Computer Science Fundamentals",
+        description:
+            "Study DBMS, Operating Systems, Computer Networks, OOPS and software engineering.",
+        links: [
+            { name: "NPTEL", url: "https://nptel.ac.in/" },
+            { name: "roadmap.sh", url: "https://roadmap.sh/" },
+        ],
+    },
+    {
+        title: "Web & Software Development",
+        description:
+            "Learn HTML, CSS, JavaScript, React, backend development and APIs.",
+        links: [
+            { name: "freeCodeCamp", url: "https://www.freecodecamp.org/" },
+            { name: "MDN Web Docs", url: "https://developer.mozilla.org/" },
+            { name: "GitHub", url: "https://github.com/" },
+        ],
+    },
+    {
+        title: "Engineering Learning",
+        description:
+            "Access online courses, technical subjects and university learning materials.",
+        links: [
+            { name: "SWAYAM", url: "https://swayam.gov.in/" },
+            { name: "MIT OpenCourseWare", url: "https://ocw.mit.edu/" },
+        ],
+    },
+    {
+        title: "Career & Placement",
+        description:
+            "Prepare for aptitude tests, interviews, resume building and internships.",
+        links: [
+            { name: "IndiaBIX", url: "https://www.indiabix.com/" },
+            { name: "Internshala", url: "https://internshala.com/" },
+            { name: "LinkedIn Jobs", url: "https://www.linkedin.com/jobs/" },
+        ],
+    },
+];
 
 const ResourcesTab = () => {
-    const renderResourceIcon = (type) => {
-        switch (type) {
-            case "documentation":
-                return <FileTextOutlined />;
-            case "guide":
-                return <FileTextOutlined />;
-            case "video":
-                return <VideoCameraOutlined />;
-            default:
-                return <LinkOutlined />;
-        }
-    };
-
     return (
-        <ResourcesContainer>
-            <ResourcesGrid>
-                {learningResources.map((resource, index) => (
-                    <ResourceCard key={resource.id || index}>
-                        <div className="resource-icon">
-                            {resource.icon === "VideoCameraOutlined" ? (
-                                <VideoCameraOutlined />
-                            ) : (
-                                <VideoCameraOutlined />
-                            )}
-                        </div>
-                        <h5>{resource.title}</h5>
-                        <p>{resource.description}</p>
+        <ResourcesContainer
+  style={{
+    display: "block",
+    width: "100%",
+    minHeight: "calc(100vh - 100px)",
+    height: "auto",
+    maxWidth: "none",
+    maxHeight: "none",
+    padding: "32px 40px",
+    overflow: "visible",
+    boxSizing: "border-box",
+  }}
+>
+            <div style={{ marginBottom: "28px" }}>
+                <h2 style={{ color: "#202b50", marginBottom: "8px" }}>
+                    Student Learning Resources
+                </h2>
+                <p style={{ color: "#7b849b", lineHeight: 1.7 }}>
+                    Explore useful learning platforms and websites for CSE,
+                    AI & Data Science and other engineering students.
+                </p>
+            </div>
 
-                        {resource.type === "video" &&
-                            (() => {
-                                const videoId = resource.url.split("/").pop();
-                                const thumbnailUrl = `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
-                                return (
-                                    <div
-                                        style={{
-                                            textAlign: "center",
-                                            marginTop: "8px",
-                                        }}
-                                    >
-                                        <div
-                                            style={{
-                                                width: "100%",
-                                                height: "80px",
-                                                background: "#f0f0f0",
-                                                borderRadius: "6px",
-                                                marginBottom: "6px",
-                                                cursor: "pointer",
-                                                overflow: "hidden",
-                                                position: "relative",
-                                            }}
-                                            onClick={() =>
-                                                window.open(
-                                                    resource.url.replace(
-                                                        "embed/",
-                                                        "watch?v="
-                                                    ),
-                                                    "_blank"
-                                                )
-                                            }
-                                        >
-                                            <img
-                                                src={thumbnailUrl}
-                                                alt={resource.title}
-                                                style={{
-                                                    width: "100%",
-                                                    height: "100%",
-                                                    objectFit: "cover",
-                                                    borderRadius: "6px",
-                                                }}
-                                                onError={(e) => {
-                                                    e.target.style.display =
-                                                        "none";
-                                                    e.target.nextElementSibling.style.display =
-                                                        "flex";
-                                                }}
-                                            />
-                                            <div
-                                                style={{
-                                                    position: "absolute",
-                                                    top: "50%",
-                                                    left: "50%",
-                                                    transform:
-                                                        "translate(-50%, -50%)",
-                                                    display: "none",
-                                                    alignItems: "center",
-                                                    justifyContent: "center",
-                                                    width: "100%",
-                                                    height: "100%",
-                                                }}
-                                            >
-                                                <VideoCameraOutlined
-                                                    style={{
-                                                        fontSize: "24px",
-                                                        color: "#1890ff",
-                                                    }}
-                                                />
-                                            </div>
-                                        </div>
-                                        <a
-                                            href={resource.url.replace(
-                                                "embed/",
-                                                "watch?v="
-                                            )}
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            style={{
-                                                fontSize: "11px",
-                                                color: "#1890ff",
-                                                textDecoration: "none",
-                                                display: "block",
-                                            }}
-                                        >
-                                            Watch on YouTube →
-                                        </a>
-                                    </div>
-                                );
-                            })()}
+            {resourceCategories.map((category, index) => (
+                <section
+                    key={category.title}
+                    style={{
+                        padding: "20px 0",
+                        borderBottom:
+                            index !== resourceCategories.length - 1
+                                ? "1px solid #e9edf5"
+                                : "none",
+                    }}
+                >
+                    <h3
+                        style={{
+                            color: "#263b78",
+                            fontSize: "17px",
+                            marginBottom: "8px",
+                        }}
+                    >
+                        {index + 1}. {category.title}
+                    </h3>
 
-                        {(resource.type === "document" ||
-                            resource.type === "link") && (
+                    <p
+                        style={{
+                            color: "#68738a",
+                            fontSize: "14px",
+                            lineHeight: 1.7,
+                            marginBottom: "12px",
+                        }}
+                    >
+                        {category.description}
+                    </p>
+
+                    <div
+                        style={{
+                            display: "flex",
+                            flexWrap: "wrap",
+                            gap: "8px 18px",
+                        }}
+                    >
+                        {category.links.map((link) => (
                             <a
-                                href={resource.url}
+                                key={link.name}
+                                href={link.url}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="resource-link"
+                                style={{
+                                    color: "#4776e6",
+                                    fontSize: "14px",
+                                    fontWeight: 600,
+                                    textDecoration: "none",
+                                }}
                             >
-                                {resource.type === "document"
-                                    ? "Open Document"
-                                    : "Explore"}{" "}
-                                {resource.type === "document" ? (
-                                    <FileTextOutlined />
-                                ) : (
-                                    <LinkOutlined />
-                                )}
+                                {link.name} ↗
                             </a>
-                        )}
-                    </ResourceCard>
-                ))}
-            </ResourcesGrid>
-
-            <SuggestedResources>
-                <h5>Suggested for you</h5>
-                <div className="resource-list">
-                    {helpResources.map((resource) => (
-                        <div
-                            key={resource.id}
-                            className={`resource-item ${
-                                resource.read ? "read" : ""
-                            }`}
-                        >
-                            <div className="resource-type">
-                                {renderResourceIcon(resource.type)}
-                            </div>
-                            <span style={{ marginInline: "1rem" }}>
-                                {resource.title}
-                            </span>
-                            {!resource.read && (
-                                <div className="unread-indicator"></div>
-                            )}
-                        </div>
-                    ))}
-                </div>
-            </SuggestedResources>
+                        ))}
+                    </div>
+                </section>
+            ))}
         </ResourcesContainer>
     );
 };

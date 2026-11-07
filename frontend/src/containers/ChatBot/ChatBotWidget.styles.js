@@ -31,64 +31,104 @@ export const FloatingButton = styled(Button)`
     }
 `;
 
+
 export const ChatPanel = styled.div`
-    position: fixed;
-    bottom: 60px;
-    right: 20px;
-    width: 320px;
-    height: 520px;
-    background: radial-gradient(
-            circle at 0% 0.8%,
-            #e6f7ff 0%,
-            transparent 76.2%
-        ),
-        radial-gradient(circle at 38.3% 76.3%, #f0f9ff 0%, transparent 53.3%),
-        radial-gradient(circle at 47.2% 85.6%, #fafafa 0%, transparent 43.4%),
-        radial-gradient(circle at 3.6% 10.1%, #ffffff 0%, transparent 64.4%),
-        radial-gradient(circle at 9.8% 98.3%, #f5f5f5 0%, transparent 43.4%),
-        radial-gradient(circle at 70.5% 28.2%, #fafafa 0%, transparent 34.5%),
-        #ffffff;
-    border-radius: 12px;
+    width: 100%;
+    min-height: calc(100vh - 125px);
     display: flex;
     flex-direction: column;
-    z-index: 999;
-    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
+    background: #ffffff;
+    border: 1px solid #e8edf5;
+    border-radius: 18px;
     overflow: hidden;
-    animation: slideUp 0.3s ease forwards;
+    box-shadow: 0 8px 30px rgba(30, 50, 90, 0.05);
 
-    @keyframes slideUp {
-        from {
-            opacity: 0;
-            transform: translateY(20px);
-        }
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
+    @media (max-width: 760px) {
+        min-height: calc(100vh - 105px);
+        border-radius: 12px;
     }
 `;
 
+
 export const ChatHeader = styled.div`
-    padding: 12px;
-    background: #343750;
-    color: white;
+    padding: 16px 24px;
+    background: #ffffff;
+    color: #202b50;
     display: flex;
     justify-content: space-between;
     align-items: center;
+    border-bottom: 1px solid #edf0f5;
 
     h3 {
         margin: 0;
-        font-size: 14px;
-        font-weight: 500;
+        font-size: 17px;
+        font-weight: 700;
     }
 `;
 
+
 export const ChatBody = styled.div`
     flex: 1;
-    padding: 12px;
+    min-height: 0;
+    padding: 30px 24px;
     overflow-y: auto;
-    background: inherit;
+    background: #ffffff;
+
+    &::-webkit-scrollbar {
+        width: 6px;
+    }
+
+    &::-webkit-scrollbar-thumb {
+        background: #d6deed;
+        border-radius: 10px;
+    }
+
+    .chat-welcome {
+        max-width: 680px;
+        margin: 55px auto 35px;
+        text-align: center;
+
+        .welcome-icon {
+            width: 66px;
+            height: 66px;
+            margin: 0 auto 22px;
+            padding: 13px;
+            border-radius: 20px;
+            background: #f0f4ff;
+            display: grid;
+            place-items: center;
+
+            img {
+                width: 100%;
+                height: 100%;
+                object-fit: contain;
+            }
+        }
+
+        h1 {
+            font-size: clamp(24px, 4vw, 34px);
+            font-weight: 700;
+            color: #202b50;
+            margin: 0 0 12px;
+        }
+
+        p {
+            font-size: 15px;
+            color: #7b849b;
+            line-height: 1.7;
+            margin: 0;
+        }
+    }
+
+    @media (max-width: 600px) {
+        padding: 20px 14px;
+
+        .chat-welcome {
+            margin: 35px auto 25px;
+        }
+    }
 `;
+
 
 export const Timestamp = styled.div`
     font-size: 10px;
@@ -100,41 +140,54 @@ export const Timestamp = styled.div`
         props.sender === "user" ? "text-align: right;" : "text-align: left"}
 `;
 
+
 export const ChatFooter = styled.div`
-    padding: 10px;
-    background: white;
+    padding: 16px 24px 22px;
+    background: #ffffff;
+    border-top: 1px solid #edf0f5;
     display: flex;
-    gap: 6px;
+    gap: 12px;
     align-items: center;
     width: 100%;
+    max-width: 850px;
+    margin: 0 auto;
+
+    @media (max-width: 600px) {
+        padding: 12px;
+    }
 `;
 
+
+
 export const MessageBubble = styled.div`
-    max-width: 80%;
-    padding: 8px 12px;
-    font-size: 13px;
-    line-height: 1.4;
-    word-wrap: break-word;
-    border-radius: 8px;
+    max-width: 85%;
+    padding: 11px 15px;
+    font-size: 14px;
+    line-height: 1.6;
+    overflow-wrap: anywhere;
+    border-radius: 15px;
     transition: all 0.2s ease;
 
     ${(props) =>
         props.sender === "user"
             ? `
-        background: #f2f8ff;
-        border: 1px solid #b7cfea;
-        color: black;
+        background: #4169e1;
+        border: 1px solid #4169e1;
+        color: white;
         align-self: flex-end;
         margin-left: auto;
-        text-align: right;
+        text-align: left;
+        border-bottom-right-radius: 4px;
     `
             : `
-        background: #FFF1F0;
-        border: 1px solid #fae5e3;
-        color: black;
+        background: #ffffff;
+        border: 1px solid #e8edf5;
+        color: #26334d;
         align-self: flex-start;
+        border-bottom-left-radius: 4px;
     `}
 `;
+
 
 export const BotMessageWrapper = styled.div`
     display: flex;
@@ -208,15 +261,17 @@ export const TypingIndicator = styled.div`
     }
 `;
 
+
 export const StyledInput = styled(Input)`
-    border: 1px solid #3aaaff;
-    border-radius: 8px;
-    font-size: 13px;
+    border: 1px solid #dce3ef;
+    border-radius: 12px;
+    font-size: 14px;
+    padding: 10px 13px;
 
     &:focus,
     &:hover {
-        border: 2px solid #3aaaff;
-        box-shadow: none;
+        border-color: #4776e6;
+        box-shadow: 0 0 0 3px rgba(71, 118, 230, 0.1);
     }
 `;
 
@@ -236,36 +291,40 @@ export const HeaderCloseButton = styled(Button)`
     }
 `;
 
+
 export const SendButton = styled(Button)`
-    width: 32px;
-    height: 32px;
-    border-radius: 8px;
-    background: #3aaaff;
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+    background: #4776e6;
     color: white;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 16px;
+    font-size: 17px;
     transition: all 0.2s ease;
 
     &:hover {
-        background: white;
-        color: black;
+        background: #315ac2 !important;
+        color: white !important;
+        transform: translateY(-2px);
     }
 `;
 
+
 export const StyledTabs = styled(Tabs)`
+    padding: 0 24px;
+    background: #ffffff;
+
     .ant-tabs-nav {
-        margin-bottom: 16px;
-        border-bottom: 2px solid #f0f0f0;
+        margin-bottom: 0;
+        border-bottom: 1px solid #edf0f5;
     }
 
     .ant-tabs-tab {
-        flex: 1;
-        justify-content: center;
+        padding: 13px 20px;
         margin: 0;
-        padding: 8px 16px;
-        transition: all 0.3s ease;
+        transition: all 0.2s ease;
     }
 
     .ant-tabs-tab-active {
@@ -273,18 +332,29 @@ export const StyledTabs = styled(Tabs)`
     }
 
     .ant-tabs-ink-bar {
-        background: #1890ff;
+        background: #4776e6;
+        height: 3px;
+        border-radius: 5px;
+    }
+
+    @media (max-width: 600px) {
+        padding: 0 8px;
+
+        .ant-tabs-tab {
+            padding: 12px;
+        }
     }
 `;
 
 export const TabContent = styled.div`
     display: flex;
     align-items: center;
-    height: 30px;
     justify-content: center;
-    width: 100%;
-    color: ${(props) => (props.$active ? "#1890ff" : "#000000")};
-    font-weight: ${(props) => (props.$active ? "600" : "400")};
+    gap: 8px;
+    min-width: 85px;
+    color: #526078;
+    font-size: 13px;
+    font-weight: 500;
 `;
 
 export const MessageWrapper = styled.div`
@@ -331,32 +401,42 @@ export const BotName = styled.h3`
 `;
 
 export const SuggestedQuestionsContainer = styled.div`
-    padding: 12px;
+    width: 100%;
+    max-width: 850px;
+    margin: 20px auto;
+    padding: 10px 0;
 `;
 
 export const SuggestedQuestionsGrid = styled.div`
     display: grid;
-    gap: 8px;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+
+    @media (max-width: 600px) {
+        grid-template-columns: 1fr;
+    }
 `;
 
 export const SuggestedQuestionItem = styled.div`
-    padding: 8px 10px;
-    background: white;
-    border: 1px solid #e8e8e8;
-    border-radius: 8px;
-    font-size: 11px;
+    padding: 15px 18px;
+    background: #ffffff;
+    border: 1px solid #e5eaf2;
+    border-radius: 12px;
+    font-size: 13px;
+    color: #526078;
     cursor: pointer;
     transition: all 0.2s ease;
-    text-align: center;
-    margin-left: auto;
-    max-width: 200px;
+    text-align: left;
+    max-width: none;
 
     &:hover {
-        background: #f0f8ff;
-        border-color: #3aaaff;
-        transform: translateY(-1px);
+        background: #f7f9ff;
+        border-color: #9db7f8;
+        transform: translateY(-2px);
     }
 `;
+
+
 
 export const ResourcesContainer = styled.div`
     padding: 16px;

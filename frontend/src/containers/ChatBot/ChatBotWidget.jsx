@@ -1,427 +1,380 @@
 import React, { useEffect, useRef, useState, useCallback } from "react";
-import { AutoComplete } from "antd";
-import {
-   SendOutlined,
-   CommentOutlined,
-   BookOutlined,
-   QuestionCircleOutlined,
-   LikeOutlined,
-   DislikeOutlined,
-} from "@ant-design/icons";
+import { CommentOutlined, BookOutlined, QuestionCircleOutlined } from "@ant-design/icons";
 import { useDispatch, useSelector } from "react-redux";
+
 import { clearMessages, sendMessage, updateUserReaction } from "./actions";
-import {
-    ADD_MESSAGE,
-    CLEAR_MESSAGES,
-    LOAD_MESSAGES_FROM_STORAGE,
-} from "./constants";
+import { LOAD_MESSAGES_FROM_STORAGE } from "./constants";
 import { chatService } from "../../services/chatService";
 import { suggestedQuestions } from "./chatBotData";
-import FloatingButton from "./components/FloatingButton";
+
 import ChatHeader from "./components/ChatHeader";
 import MessageList from "./components/MessageList";
-import TypingIndicator from "./components/TypingIndicator";
 import ChatInput from "./components/ChatInput";
 import SuggestedQuestions from "./components/SuggestedQuestions";
 import ResourcesTab from "./components/ResourcesTab";
 import FaqTab from "./components/FaqTab";
+
 import {
-   ChatPanel,
-   ChatBody,
-   ChatFooter,
-   SendButton,
-   StyledTabs,
-   TabContent,
-   LikeIconsWrapper,
-   ReactionButton,
+    ChatPanel,
+    ChatBody,
+    StyledTabs,
+    TabContent,
 } from "./ChatBotWidget.styles";
 
-// Auto-complete options
 const autoCompleteOptions = [
-   { value: "pricing", label: "pricing information" },
-   { value: "contact", label: "contact support" },
-   { value: "help", label: "get help" },
-   { value: "services", label: "available services" },
-   { value: "features", label: "product features" },
-   { value: "demo", label: "schedule a demo" },
-   { value: "documentation", label: "view documentation" },
-   { value: "tutorial", label: "tutorials and guides" },
+    { value: "pricing", label: "pricing information" },
+    { value: "contact", label: "contact support" },
+    { value: "help", label: "get help" },
+    { value: "services", label: "available services" },
+    { value: "features", label: "product features" },
+    { value: "demo", label: "schedule a demo" },
+    { value: "documentation", label: "view documentation" },
+    { value: "tutorial", label: "tutorials and guides" },
 ];
 
-// Get dynamic suggested questions from templates
 const getSuggestedQuestions = (templates) => {
-   if (!Array.isArray(templates) || templates.length === 0) {
-      return suggestedQuestions;
-   }
-   return templates
-      .slice(0, 4)
-        .map(
-            (template) =>
-                template.messages?.[0]?.content ||
-                template.name ||
-                "Ask me anything!"
-        );
-};
+    if (!Array.isArray(templates) || templates.length === 0) {
+        return suggestedQuestions;
+    }
 
-// Smart suggestions based on context
-const getSmartSuggestions = (messages) => {
-   const lastMessage = messages[messages.length - 1];
-   if (!lastMessage || lastMessage.sender === "user") return [];
-
-   const botResponse = lastMessage.text.toLowerCase();
-
-   if (botResponse.includes("pricing") || botResponse.includes("cost")) {
-        return [
-            "What are your payment options?",
-            "Do you offer discounts?",
-            "Can I get a quote?",
-        ];
-   }
-
-   if (botResponse.includes("contact") || botResponse.includes("support")) {
-        return [
-            "What's your response time?",
-            "Do you offer phone support?",
-            "Can I schedule a call?",
-        ];
-   }
-
-   if (botResponse.includes("demo") || botResponse.includes("schedule")) {
-        return [
-            "What time zones do you support?",
-            "How long is the demo?",
-            "What should I prepare?",
-        ];
-   }
-
-    return [
-        "Tell me more about this",
-        "Can you provide an example?",
-        "What are the next steps?",
-    ];
+    return templates.slice(0, 4).map(
+        (template) =>
+            template.messages?.[0]?.content ||
+            template.name ||
+            "Ask me anything!"
+    );
 };
 
 const ChatBotWidget = () => {
-   const [isOpen, setIsOpen] = useState(false);
-   const [inputValue, setInputValue] = useState("");
-   const [autoCompleteData, setAutoCompleteData] = useState([]);
-   const [showSmartSuggestions, setShowSmartSuggestions] = useState(false);
-   const [relatedQuestions, setRelatedQuestions] = useState([]);
-   const [displayedRelatedQuestions, setDisplayedRelatedQuestions] = useState([]);
-   const [_templates, _setTemplates] = useState([]);
-   const [_templatesLoading, _setTemplatesLoading] = useState(false);
-   const dispatch = useDispatch();
+    const [inputValue, setInputValue] = useState("");
+    const [autoCompleteData, setAutoCompleteData] = useState([]);
+    const [showSmartSuggestions, setShowSmartSuggestions] = useState(false);
+    const [relatedQuestions, setRelatedQuestions] = useState([]);
+    const [displayedRelatedQuestions, setDisplayedRelatedQuestions] = useState([]);
+    const [templates, setTemplates] = useState([]);
+    const [activeTab, setActiveTab] = useState("chat");
+    const [isFirstVisit, setIsFirstVisit] = useState(true);
+
+    const dispatch = useDispatch();
+
     const { messages, typing, limitReached } = useSelector(
         (state) => state.chatBot
     );
-   const messagesEndRef = useRef(null);
-   const smartSuggestionsRef = useRef(null);
-   const [activeTab, setActiveTab] = useState("chat");
 
-   const handleReaction = useCallback(
-      (messageId, reaction, event) => {
-         event?.preventDefault();
-         dispatch(updateUserReaction(messageId, reaction));
-      },
-      [dispatch]
-   );
+    const messagesEndRef = useRef(null);
+    const smartSuggestionsRef = useRef(null);
 
-   const [isFirstVisit, setIsFirstVisit] = useState(true);
-   //  close when it click outside the suggestions container i know its bulky implementation fr
-   useEffect(() => {
-      if (!showSmartSuggestions) return;
+    const handleReaction = useCallback(
+        (messageId, reaction, event) => {
+            event?.preventDefault();
+            dispatch(updateUserReaction(messageId, reaction));
+        },
+        [dispatch]
+    );
 
-      const handleClickOutside = (event) => {
+    // Load saved messages
+    useEffect(() => {
+        const savedMessages = localStorage.getItem("chatbot_messages");
+
+        if (savedMessages) {
+            try {
+                const parsedMessages = JSON.parse(savedMessages);
+
+                if (parsedMessages.length > 0) {
+                    dispatch({
+                        type: LOAD_MESSAGES_FROM_STORAGE,
+                        payload: parsedMessages,
+                    });
+                }
+            } catch (error) {
+                console.error("Error loading messages:", error);
+            }
+        }
+    }, [dispatch]);
+
+    // Save messages
+    useEffect(() => {
+        if (messages.length > 1) {
+            localStorage.setItem(
+                "chatbot_messages",
+                JSON.stringify(messages)
+            );
+        }
+    }, [messages]);
+
+    // Fetch conversation templates
+    useEffect(() => {
+        const fetchTemplates = async () => {
+            try {
+                const templateData = await chatService.getTemplates();
+
+                const fetchedTemplates = templateData.success
+                    ? templateData.data.templates
+                    : [];
+
+                setTemplates(fetchedTemplates);
+            } catch (error) {
+                console.error("Failed to fetch templates:", error);
+                setTemplates([]);
+            }
+        };
+
+        fetchTemplates();
+    }, []);
+
+    // Close smart suggestions when clicking outside
+    useEffect(() => {
+        if (!showSmartSuggestions) return;
+
+        const handleClickOutside = (event) => {
             if (
                 smartSuggestionsRef.current &&
                 !smartSuggestionsRef.current.contains(event.target)
             ) {
-            setShowSmartSuggestions(false);
-         }
-      };
-
-      document.addEventListener("mousedown", handleClickOutside);
-
-      return () => {
-         document.removeEventListener("mousedown", handleClickOutside);
-      };
-   }, [showSmartSuggestions]);
-
-   // Load messages from localStorage on component mount
-   useEffect(() => {
-      const savedMessages = localStorage.getItem("chatbot_messages");
-      if (savedMessages) {
-         try {
-            const parsedMessages = JSON.parse(savedMessages);
-            // Replace entire state with saved messages
-            if (parsedMessages.length > 0) {
-               dispatch({
-                  type: LOAD_MESSAGES_FROM_STORAGE,
-                  payload: parsedMessages,
-               });
+                setShowSmartSuggestions(false);
             }
-         } catch (error) {
-                console.error(
-                    "Error loading messages from localStorage:",
-                    error
-                );
-         }
-      }
-   }, [dispatch]);
+        };
 
-   // Save messages to localStorage whenever messages change
-   useEffect(() => {
-      if (messages.length > 1) {
-         // Don't save if only the initial greeting
-         localStorage.setItem("chatbot_messages", JSON.stringify(messages));
-      }
-   }, [messages]);
+        document.addEventListener("mousedown", handleClickOutside);
 
-   // Fetch conversation templates on component mount
-   useEffect(() => {
-      const fetchTemplates = async () => {
-         try {
-            _setTemplatesLoading(true);
-            const templateData = await chatService.getTemplates();
-            // Extract the templates array from the response
-                const templates = templateData.success
-                    ? templateData.data.templates
-                    : [];
-            _setTemplates(templates);
-         } catch (error) {
-            console.error("Failed to fetch conversation templates:", error);
-            _setTemplates([]); // Set empty array on error
-         } finally {
-            _setTemplatesLoading(false);
-         }
-      };
+        return () => {
+            document.removeEventListener("mousedown", handleClickOutside);
+        };
+    }, [showSmartSuggestions]);
 
-      fetchTemplates();
-   }, []);
+    // Scroll to latest message
+    useEffect(() => {
+        messagesEndRef.current?.scrollIntoView({
+            behavior: "smooth",
+        });
+    }, [messages, typing]);
 
-   const shouldShowSuggestedQuestions = () => {
-      return true && !typing;
-   };
+    useEffect(() => {
+        setDisplayedRelatedQuestions(relatedQuestions);
+    }, [relatedQuestions]);
 
-   const scrollToBottom = () => {
-      messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-   };
+    const handleInputChange = (value) => {
+        setInputValue(value);
 
-   useEffect(() => {
-      scrollToBottom();
-   }, [messages]);
+        if (value.length > 0) {
+            const filteredOptions = autoCompleteOptions.filter(
+                (option) =>
+                    option.value.toLowerCase().includes(value.toLowerCase()) ||
+                    option.label.toLowerCase().includes(value.toLowerCase())
+            );
 
-   const handleInputChange = (value) => {
-      setInputValue(value);
+            setAutoCompleteData(
+                filteredOptions.map((option) => ({
+                    value: option.label,
+                    label: option.label,
+                }))
+            );
+        } else {
+            setAutoCompleteData([]);
+        }
 
-      // Auto-complete logic
-      if (value.length > 0) {
-         const filteredOptions = autoCompleteOptions.filter(
-            (option) =>
-               option.value.toLowerCase().includes(value.toLowerCase()) ||
-               option.label.toLowerCase().includes(value.toLowerCase())
-         );
-         setAutoCompleteData(
-            filteredOptions.map((option) => ({
-               value: option.label,
-               label: option.label,
-            }))
-         );
-      } else {
-         setAutoCompleteData([]);
-      }
+        setShowSmartSuggestions(value.length === 0 && messages.length > 0);
+    };
 
-      // Show smart suggestions when input is focused and there are messages
-      setShowSmartSuggestions(value.length === 0 && messages.length > 0);
-   };
+    const handleAutoCompleteSelect = (value) => {
+        setInputValue(value);
+        setAutoCompleteData([]);
+        setShowSmartSuggestions(false);
+    };
 
-   const handleAutoCompleteSelect = (value) => {
-      setInputValue(value);
-      setAutoCompleteData([]);
-      setShowSmartSuggestions(false);
-   };
+    const handleSend = async () => {
+        const sentInput = inputValue.trim();
 
-   const handleSmartSuggestionClick = (suggestion) => {
-      setInputValue(suggestion);
-      setShowSmartSuggestions(false);
-   };
+        if (!sentInput || typing || limitReached) return;
 
-   // ✅ NEW: Sync displayed related questions with state changes
-   useEffect(() => {
-      setDisplayedRelatedQuestions(relatedQuestions);
-   }, [relatedQuestions]);
+        setInputValue("");
+        setAutoCompleteData([]);
+        setShowSmartSuggestions(false);
 
-   const handleSend = async () => {
-      const sent_input = inputValue;
-      setInputValue("");
-      if (sent_input.trim() && !typing) {
-         try {
-            dispatch(sendMessage(inputValue.trim()));
+        try {
+            dispatch(sendMessage(sentInput));
+
             const result = await chatService.sendMessage({
-               message: sent_input.trim(),
-               provider: "gemini",
-               useRag: true,
-               topK: 5,
+                message: sentInput,
+                provider: "gemini",
+                useRag: true,
+                topK: 5,
             });
 
             if (result.success) {
-               setRelatedQuestions(result.relatedQuestions || ["1", "2", "3", "4"]);
-               if (isFirstVisit) setIsFirstVisit(false);
+                setRelatedQuestions(
+                    result.relatedQuestions || ["1", "2", "3", "4"]
+                );
+
+                if (isFirstVisit) {
+                    setIsFirstVisit(false);
+                }
             } else {
-               dispatch(sendMessage(inputValue.trim()));
+                dispatch(sendMessage(sentInput));
             }
-         } catch (error) {
-            dispatch(sendMessage(inputValue.trim()));
-         }
-         setAutoCompleteData([]);
-         setShowSmartSuggestions(false);
-      }
-   };
-   const handleClear = () => {
-      dispatch(clearMessages());
-      localStorage.removeItem("chatbot_messages"); // Clear localStorage when messages are cleared
-      setIsFirstVisit(true);
-      setInputValue("");
-      setAutoCompleteData([]);
-      setShowSmartSuggestions(false);
-      setRelatedQuestions([]);
-   };
+        } catch (error) {
+            console.error("Chat request failed:", error);
+            dispatch(sendMessage(sentInput));
+        }
+    };
 
-   const handleSuggestedQuestionClick = async (question) => {
-      if (limitReached) return;
+    const handleSuggestedQuestionClick = async (question) => {
+        if (limitReached || typing) return;
 
-      try {
-         // setInputValue(question);
-
-         // Send the question through the same API flow as typed messages
-         dispatch(sendMessage(question.trim()));
-         const result = await chatService.sendMessage({
-            message: question.trim(),
-            provider: "gemini",
-            useRag: true,
-            topK: 5,
-         });
-
-         setIsFirstVisit(false);
-         if (result.success) {
-            setRelatedQuestions(result.relatedQuestions || []);
-            if (isFirstVisit) setIsFirstVisit(false);
-         } else {
-            // console.error("API call failed:", result.error);
+        try {
             dispatch(sendMessage(question.trim()));
-         }
-      } catch (error) {
-         // console.error("Error sending suggested question:", error);
-         dispatch(sendMessage(question.trim()));
-      }
-   };
 
-   const formatTime = (timestamp) => {
-      return new Date(timestamp).toLocaleTimeString([], {
-         hour: "2-digit",
-         minute: "2-digit",
-      });
-   };
+            const result = await chatService.sendMessage({
+                message: question.trim(),
+                provider: "gemini",
+                useRag: true,
+                topK: 5,
+            });
 
-   const questions = getSuggestedQuestions(_templates);
+            setIsFirstVisit(false);
 
-   return (
-      <>
-         <FloatingButton isOpen={isOpen} onClick={() => setIsOpen(!isOpen)} />
-         {isOpen && (
-            <ChatPanel>
-               <ChatHeader onClear={handleClear} onClose={() => setIsOpen(false)} />
-               <StyledTabs
-                  activeKey={activeTab}
-                  onChange={(key) => setActiveTab(key)}
-                  centered
-                  items={[
-                     {
+            if (result.success) {
+                setRelatedQuestions(result.relatedQuestions || []);
+            } else {
+                dispatch(sendMessage(question.trim()));
+            }
+        } catch (error) {
+            console.error("Suggested question failed:", error);
+            dispatch(sendMessage(question.trim()));
+        }
+    };
+
+    const handleClear = () => {
+        dispatch(clearMessages());
+
+        localStorage.removeItem("chatbot_messages");
+
+        setIsFirstVisit(true);
+        setInputValue("");
+        setAutoCompleteData([]);
+        setShowSmartSuggestions(false);
+        setRelatedQuestions([]);
+        setActiveTab("chat");
+    };
+
+    const formatTime = (timestamp) => {
+        return new Date(timestamp).toLocaleTimeString([], {
+            hour: "2-digit",
+            minute: "2-digit",
+        });
+    };
+
+    const questions = getSuggestedQuestions(templates);
+
+    const smartSuggestions = [
+        "Tell me more about this",
+        "Can you provide an example?",
+        "What are the next steps?",
+    ];
+
+    return (
+        <ChatPanel>
+            <ChatHeader
+                onClear={handleClear}
+                onClose={() => {}}
+            />
+
+            <StyledTabs
+                activeKey={activeTab}
+                onChange={setActiveTab}
+                centered
+                items={[
+                    {
                         key: "chat",
                         label: (
-                           <TabContent>
-                              <CommentOutlined
-                                 style={{
-                                    marginRight: "8px",
-                                    fontSize: "16px",
-                                 }}
-                              />
-                              {/* Chat*/}
-                           </TabContent>
+                            <TabContent>
+                                <CommentOutlined />
+                                <span>Chat</span>
+                            </TabContent>
                         ),
-                     },
-                     {
+                    },
+                    {
                         key: "resources",
                         label: (
-                           <TabContent>
-                              <BookOutlined
-                                 style={{
-                                    marginRight: "8px",
-                                    fontSize: "16px",
-                                 }}
-                              />
-                              {/* Resources*/}
-                           </TabContent>
+                            <TabContent>
+                                <BookOutlined />
+                                <span>Resources</span>
+                            </TabContent>
                         ),
-                     },
-                     {
+                    },
+                    {
                         key: "faq",
                         label: (
-                           <TabContent>
-                              <QuestionCircleOutlined
-                                 style={{
-                                    marginRight: "8px",
-                                    fontSize: "16px",
-                                 }}
-                              />
-                              {/*FAQ*/}
-                           </TabContent>
+                            <TabContent>
+                                <QuestionCircleOutlined />
+                                <span>FAQ</span>
+                            </TabContent>
                         ),
-                     },
-                  ]}
-               />
-               {activeTab === "chat" && (
-                  <>
-                     <ChatBody>
-                        <MessageList
-                           messages={messages}
-                           messagesEndRef={messagesEndRef}
-                           formatTime={formatTime}
-                           handleReaction={handleReaction}
-                        />
-                        {typing && <TypingIndicator />}
-                        {shouldShowSuggestedQuestions() && !limitReached && (
-                           <SuggestedQuestions
-                              questions={questions}
-                              onQuestionClick={handleSuggestedQuestionClick}
-                              relatedQuestions={displayedRelatedQuestions}
-                              isFirst={isFirstVisit}
-                           />
+                    },
+                ]}
+            />
+
+            {activeTab === "chat" && (
+                <>
+                    <ChatBody>
+                        {messages.length <= 1 && (
+                            <div className="chat-welcome">
+                                <div className="welcome-icon">
+                                    <img src="/logo.svg" alt="LB Assistant" />
+                                </div>
+
+                                <h1>How can I help you today?</h1>
+
+                                <p>
+                                    Ask me anything about Nexora,
+                                    accounts, links, orders and support.
+                                </p>
+                            </div>
                         )}
-                     </ChatBody>
-                     <ChatFooter>
-                        <ChatInput
-                           inputValue={inputValue}
-                           autoCompleteData={autoCompleteData}
-                           showSmartSuggestions={showSmartSuggestions}
-                           smartSuggestions={getSmartSuggestions(messages)}
-                           limitReached={limitReached}
-                           typing={typing}
-                           onInputChange={handleInputChange}
-                           onAutoCompleteSelect={handleAutoCompleteSelect}
-                           onSmartSuggestionClick={handleSmartSuggestionClick}
-                           onSend={handleSend}
-                           smartSuggestionsRef={smartSuggestionsRef}
+
+                        <MessageList
+                            messages={messages}
+                            formatTime={formatTime}
+                            handleReaction={handleReaction}
+                            typing={typing}
                         />
-                     </ChatFooter>
-                  </>
-               )}{" "}
-               {activeTab === "resources" && <ResourcesTab />}
-               {activeTab === "faq" && <FaqTab />}
-            </ChatPanel>
-         )}
-      </>
-   );
+
+                        {!typing && !limitReached && (
+                            <SuggestedQuestions
+                                questions={questions}
+                                onQuestionClick={handleSuggestedQuestionClick}
+                                relatedQuestions={displayedRelatedQuestions}
+                                isFirst={isFirstVisit}
+                            />
+                        )}
+
+                        <div ref={messagesEndRef} />
+                    </ChatBody>
+
+                    <ChatInput
+                        inputValue={inputValue}
+                        autoCompleteData={autoCompleteData}
+                        showSmartSuggestions={showSmartSuggestions}
+                        smartSuggestions={smartSuggestions}
+                        limitReached={limitReached}
+                        typing={typing}
+                        onInputChange={handleInputChange}
+                        onAutoCompleteSelect={handleAutoCompleteSelect}
+                        onSmartSuggestionClick={(suggestion) => {
+                            setInputValue(suggestion);
+                            setShowSmartSuggestions(false);
+                        }}
+                        onSend={handleSend}
+                        smartSuggestionsRef={smartSuggestionsRef}
+                    />
+                </>
+            )}
+
+            {activeTab === "resources" && <ResourcesTab />}
+
+            {activeTab === "faq" && <FaqTab />}
+        </ChatPanel>
+    );
 };
 
 export default ChatBotWidget;

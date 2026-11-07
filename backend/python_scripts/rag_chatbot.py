@@ -131,7 +131,7 @@ class RAGChatbot:
             ])
 
             # Create conversational prompt
-            conversational_prompt = f"""You are a helpful and friendly chatbot assistant for a platform called Linkbuilders. You should behave naturally and conversationally, like a helpful customer service representative.
+            conversational_prompt = f"""You are a helpful and friendly chatbot assistant for a platform called Nexora. You should behave naturally and conversationally, like a helpful customer service representative.
 
 Previous conversation:
 {context_text}
@@ -204,7 +204,7 @@ Please respond naturally to the user's message:"""
 
             # Create RAG prompt that's more conversational
             if context_text:
-                enhanced_prompt = f"""You are a helpful chatbot assistant for Linkbuilders platform. The user is asking about something specific, and I have some relevant information to help answer their question.
+                enhanced_prompt = f"""You are a helpful chatbot assistant for Nexora platform. The user is asking about something specific, and I have some relevant information to help answer their question.
 
 Previous conversation:
 {conversation_text}

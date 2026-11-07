@@ -2,7 +2,7 @@ const express = require("express");
 const passport = require("passport");
 const { UserSession } = require("../models");
 const logger = require("../utils/logger");
-
+const authenticateSession = require("../middleware/auth");
 const router = express.Router();
 
 // Google OAuth login
@@ -61,7 +61,7 @@ router.post("/logout", async (req, res) => {
 });
 
 // Get current user
-router.get("/me", async (req, res) => {
+router.get("/me", authenticateSession, async (req, res) => {
     try {
         const sessionKey = req.headers["x-session-key"];
 

@@ -8,7 +8,7 @@ const pythonProcessManager = require("../utils/pythonProcessManager");
 const logger = require("../utils/logger");
 const { ChatMessage, ChatSession, UserSession, User } = require("../models");
 const { sanitizeForVectorDB } = require("../utils/textSanitizer");
-
+const authenticateSession = require("../middleware/auth");
 // Import new utilities
 const QueryCache = require("../utils/query-cache");
 const RateLimiter = require("../utils/rate-limiter");
@@ -324,7 +324,10 @@ router.post(
          // Find or create chat session
          let session;
          if (sessionId) {
-            session = await ChatSession.findOne({ sessionId: sessionId });
+            session = await ChatSession.findOne({
+               sessionId,
+               userId: req.user._id.toString(),
+            });
             if (!session) {
                return res.status(404).json({
                   success: false,
@@ -565,107 +568,162 @@ router.put("/userreaction/:messageId", async (req, res) => {
    }
 });
 
+
 /**
  * GET /api/chat/sessions
- * Get all chat sessions for the user
+ * Get logged-in user's chat sessions
  */
-router.get("/sessions", async (req, res) => {
-   try {
-      const sessions = await ChatSession.find().sort({ lastActivity: -1 }).limit(50);
+router.get("/sessions", authenticateSession, async (req, res) => {
+    try {
+        const userId = req.user._id.toString();
 
-      res.json({
-         success: true,
-         sessions: sessions.map((session) => ({
-            id: session._id,
-            title: session.title,
-            messageCount: session.messageCount,
-            createdAt: session.createdAt,
-            lastActivity: session.lastActivity,
-         })),
-      });
-   } catch (error) {
-      logger.error("Error fetching chat sessions", { error: error.message });
-      res.status(500).json({
-         success: false,
-         error: "Failed to fetch chat sessions",
-      });
-   }
+        const sessions = await ChatSession.find({ userId })
+            .sort({ lastActivity: -1 })
+            .limit(50);
+
+        res.json({
+            success: true,
+            sessions: sessions.map((session) => ({
+                id: session._id,
+                sessionId: session.sessionId,
+                title: session.title,
+                messageCount: session.messageCount,
+                createdAt: session.createdAt,
+                lastActivity: session.lastActivity,
+            })),
+        });
+    } catch (error) {
+        logger.error("Error fetching chat sessions", {
+            error: error.message,
+        });
+
+        res.status(500).json({
+            success: false,
+            error: "Failed to fetch chat sessions",
+        });
+    }
 });
+
 
 /**
  * GET /api/chat/sessions/:sessionId/messages
- * Get messages for a specific chat session
+ * Get messages for an owned chat session
  */
-router.get("/sessions/:sessionId/messages", async (req, res) => {
-   try {
-      const { sessionId } = req.params;
-      const { limit = 50, offset = 0 } = req.query;
+router.get(
+    "/sessions/:sessionId/messages",
+    authenticateSession,
+    async (req, res) => {
+        try {
+            const { sessionId } = req.params;
+            const userId = req.user._id.toString();
 
-      // Verify session exists
-      const session = await ChatSession.findOne({ sessionId: sessionId });
-      if (!session) {
-         return res.status(404).json({
-            success: false,
-            error: "Chat session not found",
-         });
-      }
+            const session = await ChatSession.findOne({
+                sessionId,
+                userId,
+            });
 
-      // Get messages
-      const messages = await ChatMessage.find({ sessionId })
-         .sort({ timestamp: 1 })
-         .limit(parseInt(limit))
-         .skip(parseInt(offset));
+            if (!session) {
+                return res.status(404).json({
+                    success: false,
+                    error: "Chat session not found",
+                });
+            }
 
-      res.json({
-         success: true,
-         session: {
-            id: session._id,
-            title: session.title,
-            messageCount: session.messageCount,
-         },
-         messages: messages.map((message) => ({
-            id: message._id,
-            role: message.role,
-            content: message.content,
-            timestamp: message.timestamp,
-            metadata: message.metadata,
-         })),
-      });
-   } catch (error) {
-      logger.error("Error fetching session messages", {
-         error: error.message,
-      });
-      res.status(500).json({
-         success: false,
-         error: "Failed to fetch session messages",
-      });
-   }
-});
+            const limit = Math.min(
+                Math.max(parseInt(req.query.limit, 10) || 50, 1),
+                100
+            );
+            const offset = Math.max(
+                parseInt(req.query.offset, 10) || 0,
+                0
+            );
+
+            const messages = await ChatMessage.find({
+                sessionId,
+                userId,
+            })
+                .sort({ timestamp: 1 })
+                .limit(limit)
+                .skip(offset);
+
+            res.json({
+                success: true,
+                session: {
+                    id: session._id,
+                    sessionId: session.sessionId,
+                    title: session.title,
+                    messageCount: session.messageCount,
+                },
+                messages: messages.map((message) => ({
+                    id: message._id,
+                    role: message.role,
+                    content:
+                        message.role === "user"
+                            ? message.message
+                            : message.response,
+                    timestamp: message.timestamp,
+                    metadata: message.metadata,
+                })),
+            });
+        } catch (error) {
+            logger.error("Error fetching chat messages", {
+                error: error.message,
+            });
+
+            res.status(500).json({
+                success: false,
+                error: "Failed to fetch chat messages",
+            });
+        }
+    }
+);
+
 
 /**
  * DELETE /api/chat/sessions/:sessionId
- * Delete a chat session and all its messages
+ * Delete an owned chat session and its messages
  */
-router.delete("/sessions/:sessionId", async (req, res) => {
-   try {
-      const { sessionId } = req.params;
+router.delete(
+    "/sessions/:sessionId",
+    authenticateSession,
+    async (req, res) => {
+        try {
+            const { sessionId } = req.params;
+            const userId = req.user._id.toString();
 
-      // Delete session and messages
-      await ChatSession.findOneAndDelete({ sessionId: sessionId });
-      await ChatMessage.deleteMany({ sessionId });
+            const session = await ChatSession.findOneAndDelete({
+                sessionId,
+                userId,
+            });
 
-      res.json({
-         success: true,
-         message: "Chat session deleted successfully",
-      });
-   } catch (error) {
-      logger.error("Error deleting chat session", { error: error.message });
-      res.status(500).json({
-         success: false,
-         error: "Failed to delete chat session",
-      });
-   }
-});
+            if (!session) {
+                return res.status(404).json({
+                    success: false,
+                    error: "Chat session not found",
+                });
+            }
+
+            await ChatMessage.deleteMany({
+                sessionId,
+                userId,
+            });
+
+            res.json({
+                success: true,
+                message: "Chat session deleted successfully",
+            });
+        } catch (error) {
+            logger.error("Error deleting chat session", {
+                error: error.message,
+            });
+
+            res.status(500).json({
+                success: false,
+                error: "Failed to delete chat session",
+            });
+        }
+    }
+);
 
 /**
  * GET /api/chat/documents

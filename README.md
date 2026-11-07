@@ -1,235 +1,338 @@
-# RAG Chatbot
+# NEXORA – Learn. Build. Grow.
 
-A production-ready chatbot with **Dual RAG Implementations** (Python + JavaScript) using MERN stack.
+An AI-powered RAG chatbot platform built with the MERN stack, Python, and modern AI technologies.
 
+NEXORA helps users interact with an intelligent knowledge assistant, retrieve relevant information from a knowledge base, manage conversations, and access useful learning resources through a clean and responsive interface.
 
-This project features **two complete RAG implementations** running in parallel, allowing you to choose the best approach for your specific use case:
+## Overview
 
-### **Python RAG** (Haystack Framework)
-- **Framework**: Haystack AI with advanced NLP pipelines
-- **Embeddings**: SentenceTransformers with multiple model options
-- **Vector Store**: Qdrant with optimized retrieval
-- **Strengths**: Advanced preprocessing, complex queries, extensive customization
-- **Performance**: Robust for complex document analysis and multi-modal content
-- **Use Case**: Enterprise applications requiring sophisticated document processing
+NEXORA features two RAG (Retrieval-Augmented Generation) implementations:
 
-### **JavaScript RAG** (Node.js Native)
-- **Framework**: Pure JavaScript with @xenova/transformers
-- **Embeddings**: all-MiniLM-L6-v2 model running client-side
-- **Vector Store**: Qdrant with REST API integration
-- **Strengths**: Zero Python dependencies, fast startup, edge computing ready
-- **Performance**: 53% faster response times, lower memory footprint
-- **Use Case**: Web applications, edge computing, serverless environments
+- **Python RAG:** Uses the Haystack framework for advanced document processing and retrieval.
+- **JavaScript RAG:** Uses Node.js and Transformers for native JavaScript-based retrieval workflows.
 
-### **Built-in Comparison Testing**
-Run comprehensive benchmarks between both implementations:
-```bash
-# Run full comparison suite
-npm run test:compare
+Both implementations integrate with Qdrant for vector search and support LLM-powered responses.
 
-# Test individual implementations
-npm run test:js      # JavaScript RAG tests
-npm run test:python  # Python RAG tests
-```
+## Key Features
 
-### **Automatic Fallback System**
-- Both implementations run in parallel for maximum reliability
-- Automatic failover if one implementation encounters issues
-- Consistent API responses regardless of which RAG engine is used
-- Real-time performance monitoring and switching capabilities
+### AI Chatbot
+- AI-powered conversational interface.
+- Retrieval-Augmented Generation (RAG).
+- Google Gemini integration.
+- Context-aware responses using knowledge-base retrieval.
+- Conversation management.
 
-### **Performance Comparison** (Latest Benchmark - September 19, 2025)
-```
-📊 COMPARISON TEST RESULTS
-============================================================
+### Dual RAG Architecture
+- Python-based RAG using Haystack.
+- JavaScript-based RAG using Node.js.
+- Sentence Transformers embeddings.
+- Qdrant vector database integration.
 
-📈 Success Rates:
-JavaScript: 4/4 tests passed (100.0%)
-Python: 4/4 tests passed (100.0%)
+### User Authentication
+- Google OAuth authentication.
+- Session-based user authentication.
+- Protected user routes.
 
-⏱️  Total Execution Time:
-JavaScript: 24.6s
-Python: 52.8s
-Time ratio (JS/Python): 0.47x (JavaScript 53% faster)
+### Chat History
+- View previous conversations.
+- Open and continue earlier conversations.
+- Manage conversation history.
+- Delete chat sessions.
 
-📋 Detailed Performance:
-🔹 LLM Providers:     JavaScript: 0ms    | Python: 1.8s
-🔹 Document Operations: JavaScript: 4.4s  | Python: 10.0s
-🔹 Basic Chat Response: JavaScript: 10.6s | Python: 24.9s
-🔹 Complex Response:   JavaScript: 9.6s  | Python: 16.0s
+### Learning Resources
+- Programming and Data Structures.
+- AI, Machine Learning and Data Science.
+- Computer Science Fundamentals.
+- Web and Software Development.
+- Engineering Learning.
+- Career and Placement Preparation.
 
-Key Insights:
-- Both implementations achieve 100% success rate with proper error handling
-- JavaScript implementation is 53% faster overall with consistent performance
-- JavaScript excels in LLM provider initialization and basic operations
-- Python shows strength in complex document processing when retrieval works
-- JavaScript offers better reliability for production environments
-```
+### FAQ
+- Simple question-and-answer interface.
+- Expandable FAQ sections.
+- Helpful information about using the platform.
 
-## Features
-
-- **Multi-LLM Support**: Google Gemini, OpenAI GPT, DeepSeek
-- **RAG Pipeline**: Haystack framework for document processing and retrieval
-- **Vector Database**: Qdrant for efficient similarity search
-- **Real-time Chat**: WebSocket-based conversations with localStorage persistence
-- **Conversation Templates**: Dynamic conversation starters and guided interactions
-- **Document Training**: Automatic knowledge base updates
-- **Backend Utilities**: Rate limiting, query caching, and conversation management
+### Backend Utilities
+- Rate limiting.
+- Query caching.
+- Input validation and sanitization.
+- Conversation management.
+- Logging and error handling.
 
 ## Tech Stack
 
-- **Frontend**: React 19 + Redux Toolkit + Ant Design + Styled Components
-- **Backend**: Node.js + Express + MongoDB Atlas
-- **AI/ML**: Python + Haystack + Qdrant + Multiple LLM Providers
-- **Database**: MongoDB with Mongoose ODM
-- **Caching**: Redis-compatible query caching
-- **Rate Limiting**: Express rate limiting middleware
-- **Logging**: Winston with daily rotation
-- **Containerization**: Docker + Docker Compose
+| Layer | Technologies |
+|---|---|
+| Frontend | React, Redux Toolkit, Ant Design |
+| Styling | Styled Components |
+| Backend | Node.js, Express.js |
+| Database | MongoDB, Mongoose |
+| Vector Database | Qdrant |
+| AI / ML | Python, Haystack, Transformers |
+| Embeddings | Sentence Transformers |
+| LLM | Google Gemini |
+| Authentication | Google OAuth, Passport.js |
+| Containerization | Docker, Docker Compose |
+| Package Management | npm, pnpm |
 
-## Quick Start
+## Architecture
+
+```text
+                  NEXORA
+                     |
+          React Frontend (Vite)
+                     |
+              Express Backend
+                     |
+          Authentication & APIs
+                     |
+          Chat Processing Layer
+                     |
+             RAG Integration
+              /          \
+       Python RAG      JavaScript RAG
+       (Haystack)       (Node.js)
+              \          /
+               Qdrant
+                     |
+              LLM Provider
+               (Gemini)
+                     |
+             AI Chat Response
+
+        MongoDB - Users & Chat History
+```
+
+## Project Structure
+
+```text
+Chatbot/
+│
+├── backend/
+│   ├── python_scripts/
+│   │   ├── rag_chatbot.py
+│   │   └── requirements.txt
+│   │
+│   ├── src/
+│   │   ├── middleware/
+│   │   ├── models/
+│   │   ├── routes/
+│   │   └── utils/
+│   │
+│   ├── .env.example
+│   └── startup.sh
+│
+├── frontend/
+│   ├── public/
+│   └── src/
+│       ├── assets/
+│       ├── containers/
+│       │   ├── ChatBot/
+│       │   └── DefaultLayout/
+│       ├── services/
+│       └── view/
+│
+├── docker-compose.yml
+└── README.md
+```
+
+*The structure above highlights the main project areas; additional files and modules may exist.*
+
+## Getting Started
 
 ### Prerequisites
-- Node.js 18+
-- Python 3.8+
-- MongoDB
+
+- Git
+- Docker Desktop and Docker Compose
+- Google Gemini API key
+- Google OAuth credentials (for Google sign-in)
+
+For manual installation, Node.js, pnpm, Python, MongoDB, and Qdrant are also required.
+
+### 1. Clone the Repository
+
+```bash
+git clone <your-github-repository-url>
+cd Chatbot
+```
+
+### 2. Configure Environment Variables
+
+Create your backend environment file using the example:
+
+```bash
+cp backend/.env.example backend/.env
+```
+
+On Windows PowerShell:
+
+```powershell
+Copy-Item backend/.env.example backend/.env
+```
+
+Update the required values in `backend/.env`:
+
+- MongoDB connection settings.
+- Google Gemini API key.
+- Google OAuth client credentials.
+- Qdrant connection settings.
+- Other environment variables required by the application.
+
+**Important:** Never commit `.env` files, API keys, OAuth secrets, or session credentials to GitHub.
+
+### 3. Start with Docker
+
+From the project root:
+
+```bash
+docker compose up -d --build
+```
+
+Check the running containers:
+
+```bash
+docker compose ps
+```
+
+View application logs:
+
+```bash
+docker compose logs -f
+```
+
+Stop the services:
+
+```bash
+docker compose down
+```
+
+### 4. Access the Application
+
+| Service | URL |
+|---|---|
+| NEXORA Frontend | http://localhost:5173 |
+| Backend API | http://localhost:3000 |
+| Qdrant Dashboard | http://localhost:6333/dashboard |
+| MongoDB | localhost:27017 |
+
+Make sure your required environment variables and OAuth configuration are set before using the application.
+
+## RAG Implementations
+
+### Python RAG – Haystack
+
+The Python implementation provides document processing and retrieval capabilities.
+
+**Technologies:**
+- Python
+- Haystack
+- Sentence Transformers
 - Qdrant
 
-### Installation
+**Key capabilities:**
+- Document processing.
+- Embedding generation.
+- Vector-based retrieval.
+- Context-aware response generation.
 
-```bash
-# Clone repository
-git clone <repo-url>
-cd chatbot
+### JavaScript RAG – Node.js
 
-# Backend setup
-cd backend
-npm install
-cd python_scripts
-pip install -r requirements.txt
+The JavaScript implementation provides a native Node.js RAG workflow.
 
-# Frontend setup
-cd ../../frontend
-pnpm install
-```
+**Technologies:**
+- Node.js
+- JavaScript
+- @xenova/transformers
+- Qdrant REST API
 
-### Configuration
-
-Create `backend/.env`:
-
-``` env
-cd backend
-cp .env.example .env
-```
-
-```env
-NODE_ENV=development
-PORT=3000
-MONGODB_URI=mongodb://localhost:27017/chatbot_db
-GOOGLE_API_KEY=your_key
-QDRANT_URL=http://localhost:6333
-```
-
-### Start Services
-
-```bash
-# Terminal 1: Backend
-cd backend && npm start
-
-# Terminal 2: Frontend
-cd frontend && pnpm run dev
-```
-
-## 🧪 Testing & Benchmarking
-
-### **Comprehensive Test Suite**
-```bash
-# Run all tests
-npm test
-
-# Implementation comparison (RECOMMENDED)
-npm run test:compare
-
-# Individual implementation tests
-npm run test:js          # JavaScript RAG tests
-npm run test:python      # Python RAG tests
-
-# Health and diagnostics
-npm run health:check     # System health check
-```
-
-### **Test Coverage**
-- ✅ **LLM Provider Testing**: Validates all AI providers (Gemini, OpenAI, DeepSeek)
-- ✅ **Document Operations**: Tests indexing and retrieval performance
-- ✅ **Chat Response Quality**: Benchmarks response generation and accuracy
-- ✅ **Error Handling**: Ensures graceful failure recovery
-- ✅ **Performance Metrics**: Detailed timing and resource usage analysis
-
-### **Latest Test Results Summary**
-- **Success Rate**: Both implementations achieve 100% test pass rate
-- **Performance**: JavaScript RAG is 53% faster than Python RAG
-- **Reliability**: Robust error handling with automatic fallback mechanisms
-- **Compatibility**: Seamless integration with all supported LLM providers
+**Key capabilities:**
+- JavaScript-based document processing.
+- Embedding generation.
+- Vector search.
+- LLM integration.
 
 ## API Endpoints
 
+The following endpoints are documented by the project:
+
 | Method | Endpoint | Description |
-|--------|----------|-------------|
-| POST | `/api/chat/message` | Send chat message |
-| GET | `/api/chat/sessions` | Get chat sessions |
-| GET | `/api/chat/templates` | Get conversation templates |
-| GET | `/api/chat/documents/train` | Train on chat data |
-| GET | `/api/chat/stats` | Get chat statistics |
-| GET | `/api/health` | Health check endpoint |
-| GET | `/api/debug/database` | Database connection status |
-| GET | `/api/debug/cache` | Cache statistics and status |
-| GET | `/api/debug/rate-limit` | Rate limiting status |
+|---|---|---|
+| GET | `/api/auth/google` | Initiate Google authentication |
+| GET | `/api/auth/me` | Get current authenticated user |
+| POST | `/api/auth/logout` | Log out |
+| POST | `/api/chat/message` | Send a chat message |
+| GET | `/api/chat/sessions` | Retrieve chat sessions |
+| GET | `/api/chat/sessions/:sessionId/messages` | Retrieve session messages |
+| DELETE | `/api/chat/sessions/:sessionId` | Delete a chat session |
+| GET | `/api/chat/templates` | Retrieve conversation templates |
+| GET | `/api/health` | Health check |
 
-### Example Usage
+Authentication-protected endpoints require a valid user session.
 
-```javascript
-// Send message with RAG
-const response = await fetch('/api/chat/message', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-        message: "What is machine learning?",
-        provider: "gemini",
-        useRag: true
-    })
-});
+## Testing and Benchmarking
 
-// Get conversation templates
-const templates = await fetch('/api/chat/templates');
-const templateData = await templates.json();
+The project README previously documented the following test commands:
 
-// Check system health
-const health = await fetch('/api/health');
-const healthStatus = await health.json();
+```bash
+npm test
+
+npm run test:compare
+
+npm run test:js
+
+npm run test:python
+
+npm run health:check
 ```
 
+Run these commands from the directory containing the corresponding npm scripts.
 
-## Key Components
+### Historical Benchmark Snapshot
 
-### Dual RAG Implementations
+The existing project benchmark, dated September 19, 2025, reported:
 
-#### **Python RAG Stack**
-- `haystack_rag.py`: Advanced document indexing and retrieval using Haystack framework
-- `rag_chatbot.py`: Main chatbot logic combining retrieval + generation with conversation context
-- `llm_factory.py`: Multi-provider LLM management (Gemini, OpenAI, DeepSeek)
-- **Advantages**: Rich ecosystem, advanced NLP features, extensive customization options
+| Metric | JavaScript RAG | Python RAG |
+|---|---:|---:|
+| Successful tests | 4/4 | 4/4 |
+| Execution time | 24.6 seconds | 52.8 seconds |
+| Reported success rate | 100% | 100% |
 
-#### **JavaScript RAG Stack**
-- `js-rag.js`: Pure JavaScript document processing with @xenova/transformers
-- `js-rag-chatbot.js`: Client-side RAG implementation with native performance
-- `js-llm-factory.js`: JavaScript LLM provider integration
-- **Advantages**: Zero Python dependencies, faster startup, edge computing compatible
+The original benchmark reported JavaScript RAG as approximately 53% faster in that test environment. These are historical project-reported results, not a guarantee of current performance.
 
-### Backend Utilities
-- **RateLimiter**: Express middleware for API rate limiting and abuse prevention
-- **QueryCache**: Redis-compatible caching system for AI responses and frequently accessed data
-- **ConversationTemplates**: Dynamic conversation starters with categorized templates (greeting, technical support, sales, etc.)
-- **ConversationalChatbot**: Main AI chatbot logic with multi-provider LLM support
-- **PythonProcessManager**: Orchestrates Python scripts and handles inter-process communication
-- **TextSanitizer**: Input validation and sanitization for security
-- **Logger**: Winston-based logging with daily rotation and multiple log levels
+## Security
+
+- Keep API keys and OAuth credentials in environment variables.
+- Never commit `.env` files.
+- Use authentication middleware for protected routes.
+- Validate and sanitize user input.
+- Configure production secrets securely.
+- Restrict access to database and vector-store services.
+
+## Future Improvements
+
+- Additional LLM provider integrations.
+- Improved document upload and knowledge-base management.
+- Advanced RAG evaluation.
+- Enhanced conversation management.
+- More learning and placement resources.
+- Deployment to a cloud platform.
+
+## Contributing
+
+Contributions, suggestions, and improvements are welcome.
+
+1. Fork the repository.
+2. Create a feature branch.
+3. Implement your changes.
+4. Test your changes.
+5. Submit a pull request.
+
+## License
+
+Add your preferred open-source license here.
+
+---
+
+**NEXORA – Learn. Build. Grow.**
+
+An intelligent learning and knowledge assistant powered by AI.

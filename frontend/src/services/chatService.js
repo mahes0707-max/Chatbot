@@ -55,25 +55,49 @@ export const chatService = {
       }
    },
    /**
-    * Get chat history for a session
-    * @param {string} sessionId - The session ID
-    * @returns {Promise<Object>} Chat history data
-    */
-   async getChatHistory(sessionId) {
-      try {
-         const response = await api.get(`/chat/history/${sessionId}`);
-         return {
-            success: true,
-            data: response.data,
-         };
-      } catch (error) {
-         console.error("Error fetching chat history:", error);
-         return {
-            success: false,
-            error: error.response?.data?.message || error.message,
-         };
-      }
-   },
+ * Get messages for a particular chat session
+ */
+async getChatHistory(sessionId) {
+   try {
+      const response = await api.get(
+         `/chat/sessions/${sessionId}/messages`
+      );
+
+      return {
+         success: true,
+         data: response.data.messages || [],
+      };
+   } catch (error) {
+      console.error("Error fetching chat history:", error);
+
+      return {
+         success: false,
+         error: error.response?.data?.message || error.message,
+         data: [],
+      };
+   }
+},
+   /**
+ * Get all chat sessions for the logged-in user
+ */
+async getSessions() {
+   try {
+      const response = await api.get("/chat/sessions");
+
+      return {
+         success: true,
+         data: response.data.sessions || [],
+      };
+   } catch (error) {
+      console.error("Error fetching chat sessions:", error);
+
+      return {
+         success: false,
+         error: error.response?.data?.message || error.message,
+         data: [],
+      };
+   }
+},
 
    /**
     * updated user reaction

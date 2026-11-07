@@ -122,7 +122,7 @@ class JSLLMFactory {
 
     async _generateGemini(prompt, options = {}) {
         const client = this.providers["gemini"].client;
-        const model = options.model || "gemini-2.0-flash";
+        const model = options.model || "gemini-3.5-flash-lite";
         const maxTokens = options.maxTokens || 1000;
         const temperature = options.temperature || 0.7;
 
